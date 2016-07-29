@@ -1,0 +1,3 @@
+SAMPLES: ["sample1" , "sample2"]
+ASSEMBLIES: ["sample1" , "sample2"]
+CENTRIFUGE_BASE: "/home/jgsanders/miniconda/envs/anvio2/centrifuge"
