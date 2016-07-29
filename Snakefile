@@ -41,7 +41,7 @@ rule bowtie2_map:
         threads=12,
         idx_base="data/assemblies/{assembly}"
     output:
-        "data/mapped_reads/{assembly}.{sample}.bam"
+        temp("data/mapped_reads/{assembly}.{sample}.bam")
     shell:
         "bowtie2 -x {params.idx_base} -p {params.threads} --no-unal " \
                   "-q -1 {input.R1} -2 {input.R2} | " \
@@ -138,18 +138,20 @@ rule anvi_profile:
         centrifuge_done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done",
         hmms_done="data/anvio/{assembly}/{assembly}.db.run-hmms.done"
     output:
-        aux="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/AUXILIARY-DATA.h5",
-        prof="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/PROFILE.db",
-        info="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/RUNINFO.cp",
-        log="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/RUNLOG.txt"
+        aux="data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/AUXILIARY-DATA.h5",
+        prof="data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/PROFILE.db",
+        info="data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/RUNINFO.cp",
+        log="data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/RUNLOG.txt"
     shell:
         """
-        anvi-profile -i {input.sorted} -c {input.db}
+        anvi-profile -i {input.sorted} \
+        -c {input.db} \
+        -o data/sorted_reads/{wildcards.assembly}.{wildcards.sample}.bam-ANVIO_PROFILE
         """
 
 rule anvi_merge:
     input:
-        profiles=expand("data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/RUNINFO.cp",
+        profiles=expand("data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/RUNINFO.cp",
                         assembly=ASSEMBLIES,
                         sample=SAMPLES),
         db="data/anvio/{assembly}/{assembly}.db"
