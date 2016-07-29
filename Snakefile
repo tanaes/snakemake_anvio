@@ -26,9 +26,9 @@ rule bowtie2_index:
     input:
         "data/assemblies/{assembly}.fa"
     output:
-        "data/assemblies/{assembly}.rev.2.bt2"
+        idx="data/assemblies/{assembly}.rev.2.bt2"
     shell:
-        "bowtie2-build {input} {wildcards.assembly}"
+        "bowtie2-build {input} data/assemblies/{wildcards.assembly}"
 
 
 rule bowtie2_map:
