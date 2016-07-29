@@ -47,7 +47,6 @@ rule bowtie2_map:
                   "-q -1 {input.R1} -2 {input.R2} | " \
                   "samtools view -bS - > {output}"
 
-
 rule samtools_sort:
     input:
         "data/mapped_reads/{assembly}.{sample}.bam"
@@ -55,7 +54,6 @@ rule samtools_sort:
         "data/sorted_reads/{assembly}.{sample}.bam"
     shell:
         "samtools sort -O bam -o {output} {input}"
-
 
 rule samtools_index:
     input:
@@ -132,6 +130,7 @@ rule anvi_run_centrifuge:
 rule anvi_profile:
     input:
         sorted="data/sorted_reads/{assembly}.{sample}.bam",
+        idx="data/sorted_reads/{assembly}.{sample}.bam.bai",
         db="data/anvio/{assembly}/{assembly}.db",
         centrifuge_done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done",
         hmms_done="data/anvio/{assembly}/{assembly}.db.run-hmms.done"
