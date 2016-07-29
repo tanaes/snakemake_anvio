@@ -35,8 +35,8 @@ rule bowtie2_map:
     input:
         fa="data/assemblies/{assembly}.fa",
         idx="data/assemblies/{assembly}.rev.2.bt2",
-        R1="data/samples/{sample}.R1.fa.gz",
-        R2="data/samples/{sample}.R2.fa.gz"
+        R1="data/samples/{sample}.R1.fq.gz",
+        R2="data/samples/{sample}.R2.fq.gz"
     params:
         threads=12,
         idx_base="data/assemblies/{assembly}"
