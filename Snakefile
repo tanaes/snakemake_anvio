@@ -113,16 +113,19 @@ rule anvi_run_centrifuge:
         -S {output.hits} \
         --report-file {output.report}
 
-        cd data/anvio/{wildcards.assembly}
-        ln -s {output.hits} centrifuge_hits.tsv
-        ln -s {output.report} centrifuge_report.tsv
+        ln -s {output.hits} data/anvio/{wildcards.assembly}/centrifuge_hits.tsv
+        ln -s {output.report} data/anvio/{wildcards.assembly}/centrifuge_report.tsv
 
-        anvi-import-taxonomy -c {input.db} \
+        cd data/anvio/{wildcards.assembly}
+
+        anvi-import-taxonomy -c {wildcards.assembly}.db \
         -i centrifuge_report.tsv centrifuge_hits.tsv \
         -p centrifuge
 
         rm centrifuge_hits.tsv
         rm centrifuge_report.tsv
+
+        cd ../../../
 
         touch {output.done}
         """
