@@ -146,6 +146,7 @@ rule anvi_profile:
         """
         anvi-profile -i {input.sorted} \
         -c {input.db} \
+        --overwrite-output-destinations \
         -o data/sorted_reads/{wildcards.assembly}.{wildcards.sample}.bam-ANVIO_PROFILE
         """
 
