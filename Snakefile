@@ -1,30 +1,18 @@
-# make assembly folder with links
-# make samples folder with links
+import os
 
-# index assemblies
+configfile: "config.yaml"
 
-# map samples
-# sort and index samples
+SAMPLES = config["SAMPLES"]
+ASSEMBLIES = config["ASSEMBLIES"]
+CENTRIFUGE_BASE = config["CENTRIFUGE_BASE"]
 
-# make anvio db
+ENV_ANVI = "source activate anvio2"
 
-# annotate sc genes
+shell.prefix(ENV_ANVI + '; ')
 
-# export gene calls
-
-# centrifuge
-
-# profile
-
-# merge
-
-# summarize
-
-
-
-SAMPLES = ["A", "B"]
-ASSEMBLIES = ["X","Y"]
-CENTRIFUGE_BASE = "/home/jgsanders/miniconda/envs/anvio2/centrifuge"
+# SAMPLES = ["A", "B"]
+# ASSEMBLIES = ["X","Y"]
+# CENTRIFUGE_BASE = "/home/jgsanders/miniconda/envs/anvio2/centrifuge"
 
 
 rule all:
@@ -50,7 +38,7 @@ rule bowtie2_map:
         R1="data/samples/{sample}.R1.fa.gz",
         R2="data/samples/{sample}.R2.fa.gz"
     params:
-        threads=8,
+        threads=12,
         idx_base="data/assemblies/{assembly}"
     output:
         "data/mapped_reads/{assembly}.{sample}.bam"
