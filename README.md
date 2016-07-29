@@ -1,6 +1,7 @@
 # snakemake_anvio
 snakemake rules for running anvio
 
+Example edit
 
 This Snakefile will run a basic [anvi'o](http://merenlab.org/software/anvio/) analysis
 of a set of assemblies and a set of samples, using the [snakemake](https://bitbucket.org/snakemake/snakemake/wiki/Home)
