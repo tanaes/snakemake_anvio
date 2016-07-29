@@ -23,104 +23,167 @@
 
 
 SAMPLES = ["A", "B"]
+ASSEMBLIES = ["X","Y"]
+CENTRIFUGE_BASE = "/home/jgsanders/miniconda/envs/anvio2/centrifuge"
 
 
 rule all:
-    input:
-        "report.html"
+    input: 
+        expand("data/anvio/{assembly}/{assembly}_SAMPLES-SUMMARY/index.html",
+               assembly=ASSEMBLIES,
+               sample=SAMPLES)
 
-# =expand("sorted_reads/{sample}.bam", sample=config["samples"]),
-
-rule link_files:
-    input:
-        assembly=
 
 rule bowtie2_index:
     input:
-        fa=expand("data/assemblies/{assembly}.fa", assembly=config["assemblies"])
+        "data/assemblies/{assembly}.fa"
     output:
-        idx=expand("data/assemblies/{assembly}.rev.2.bt2", assembly=config["assemblies"])
-    params:
-        assembly=config["assemblies"]
-    run:
-        shell("bowtie2-build {input.fa} {params.assembly}")
+        "data/assemblies/{assembly}.rev.2.bt2"
+    shell:
+        "bowtie2-build {input} {wildcards.assembly}"
 
 
 rule bowtie2_map:
     input:
-        fa=expand("data/assemblies/{assembly}.fa", assembly=config["assemblies"]),
-        idx=expand("data/assemblies/{assembly}.rev.2.bt2", assembly=config["assemblies"]),
-        R1=expand("data/samples/{sample}.R1.fa.gz", sample=config["samples"]),
-        R2=expand("data/samples/{sample}.R2.fa.gz", sample=config["samples"])
+        fa="data/assemblies/{assembly}.fa",
+        idx="data/assemblies/{assembly}.rev.2.bt2",
+        R1="data/samples/{sample}.R1.fa.gz",
+        R2="data/samples/{sample}.R2.fa.gz"
     params:
-        assembly=config["assemblies"]
-        threads=8
+        threads=8,
+        idx_base="data/assemblies/{assembly}"
     output:
-        bam=expand("data/mapped_reads/{assembly}.{sample}.bam",
-                   assembly=config["assemblies"],
-                   sample=config["sample"])
-    run:
-        with tempfile.TemporaryDirectory(dir=TMP_DIR_ROOT) as temp_dir:
-            shell("bowtie2 -x {params.assembly} -p {params.threads} --no-unal "
-                  "-q -1 {input.R1} -2 {input.R2} | "
-                  "samtools view -bS - > {output.bam}")
+        "data/mapped_reads/{assembly}.{sample}.bam"
+    shell:
+        "bowtie2 -x {params.idx_base} -p {params.threads} --no-unal " \
+                  "-q -1 {input.R1} -2 {input.R2} | " \
+                  "samtools view -bS - > {output}"
 
 
 rule samtools_sort:
     input:
-        bam=expand("data/mapped_reads/{assembly}.{sample}.bam",
-                   assembly=config["assemblies"],
-                   sample=config["sample"])
+        "data/mapped_reads/{assembly}.{sample}.bam"
     output:
-        bam=expand("data/sorted_reads/{assembly}.{sample}.bam",
-                   assembly=config["assemblies"],
-                   sample=config["sample"])
+        "data/sorted_reads/{assembly}.{sample}.bam"
     shell:
-        "samtools sort -O bam -o {output.bam} {input.bam}"
+        "samtools sort -O bam -o {output} {input}"
 
 
 rule samtools_index:
     input:
-        bam=expand("data/sorted_reads/{assembly}.{sample}.bam",
-                   assembly=config["assemblies"],
-                   sample=config["sample"])
+        "data/sorted_reads/{assembly}.{sample}.bam"
     output:
-        bai=expand("data/sorted_reads/{assembly}.{sample}.bam.bai",
-                   assembly=config["assemblies"],
-                   sample=config["sample"])
+        "data/sorted_reads/{assembly}.{sample}.bam.bai"
     shell:
-        "samtools index {input.bam}"
+        "samtools index {input}"
 
-
-rule bcftools_call:
+rule anvi_gen_contigs_database:
     input:
-        fa="data/genome.fa",
-        bam=expand("sorted_reads/{sample}.bam", sample=SAMPLES),
-        bai=expand("sorted_reads/{sample}.bam.bai", sample=SAMPLES)
+        "data/assemblies/{assembly}.fa"
     output:
-        "calls/all.vcf"
+        "data/anvio/{assembly}/{assembly}.db"
     shell:
-        "samtools mpileup -g -f {input.fa} {input.bam} | "
-        "bcftools call -mv - > {output}"
+        "anvi-gen-contigs-database -f {input} -o {output}"
 
-
-rule report:
+rule anvi_run_hmms:
     input:
-        "calls/all.vcf"
+        "data/anvio/{assembly}/{assembly}.db"
     output:
-        "report.html"
-    run:
-        from snakemake.utils import report
-        with open(input[0]) as vcf:
-            n_calls = sum(1 for l in vcf if not l.startswith("#"))
+        "data/anvio/{assembly}/{assembly}.db.run-hmms.done"
+    params:
+        threads=30
+    shell:
+        """
+        anvi-run-hmms -c {input} --num-threads {params.threads}
+        touch {output}
+        """
 
-        report("""
-        An example variant calling workflow
-        ===================================
+rule anvi_export_gene_calls:
+    input:
+        "data/anvio/{assembly}/{assembly}.db"
+    output:
+        "data/anvio/{assembly}/{assembly}.gene-calls.fa"
+    shell:
+        "anvi-get-dna-sequences-for-gene-calls -c {input} -o {output}"
 
-        Reads were mapped to the Yeast
-        reference genome and variants were called jointly with
-        SAMtools/BCFtools.
+rule anvi_run_centrifuge:
+    input:
+        fa="data/anvio/{assembly}/{assembly}.gene-calls.fa",
+        db="data/anvio/{assembly}/{assembly}.db"
+    output:
+        hits="data/anvio/{assembly}/{assembly}.centrifuge_hits.tsv",
+        report="data/anvio/{assembly}/{assembly}.centrifuge_report.tsv",
+        done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done"
+    params:
+        threads=8,
+        centrifuge_base=CENTRIFUGE_BASE,
+        centrifuge_models=CENTRIFUGE_BASE + '/b+h+v/b+h+v'
+    shell:
+        """
+        export CENTRIFUGE_BASE={params.centrifuge_base}
+        centrifuge -f --threads {params.threads} \
+        -x {params.centrifuge_models} \
+        {input.fa} \
+        -S {output.hits} \
+        --report-file {output.report}
 
-        This resulted in {n_calls} variants (see Table T1_).
-        """, output[0], T1=input[0])
+        cd data/anvio/{wildcards.assembly}
+        ln -s {output.hits} centrifuge_hits.tsv
+        ln -s {output.report} centrifuge_report.tsv
+
+        anvi-import-taxonomy -c {input.db} \
+        -i centrifuge_report.tsv centrifuge_hits.tsv \
+        -p centrifuge
+
+        rm centrifuge_hits.tsv
+        rm centrifuge_report.tsv
+
+        touch {output.done}
+        """
+
+rule anvi_profile:
+    input:
+        sorted="data/sorted_reads/{assembly}.{sample}.bam",
+        db="data/anvio/{assembly}/{assembly}.db",
+        centrifuge_done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done",
+        hmms_done="data/anvio/{assembly}/{assembly}.db.run-hmms.done"
+    output:
+        aux="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/AUXILIARY-DATA.h5",
+        prof="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/PROFILE.db",
+        info="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/RUNINFO.cp",
+        log="data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/RUNLOG.txt"
+    shell:
+        """
+        anvi-profile -i {input.sorted} -c {input.db}
+        """
+
+rule anvi_merge:
+    input:
+        profiles=expand("data/sorted_reads/{assembly}.{sample}.bam-ANVI_PROFILE/RUNINFO.cp",
+                        assembly=ASSEMBLIES,
+                        sample=SAMPLES),
+        db="data/anvio/{assembly}/{assembly}.db"
+    output:        
+        aux="data/anvio/{assembly}/SAMPLES_MERGED/AUXILIARY-DATA.h5",
+        prof="data/anvio/{assembly}/SAMPLES_MERGED/PROFILE.db",
+        info="data/anvio/{assembly}/SAMPLES_MERGED/RUNINFO.mcp"
+    shell:
+        """
+        anvi-merge {input.profiles} \
+        -o data/anvio/{wildcards.assembly}/SAMPLES_MERGED \
+        -c {input.db}
+        """
+
+rule anvi_summarize:
+    input:
+        prof="data/anvio/{assembly}/SAMPLES_MERGED/PROFILE.db",
+        db="data/anvio/{assembly}/{assembly}.db"
+    output:
+        "data/anvio/{assembly}/{assembly}_SAMPLES-SUMMARY/index.html"
+    shell:
+        """
+        anvi-summarize -p {input.prof} \
+        -c {input.db} \
+        -o data/anvio/{wildcards.assembly}/{wildcards.assembly}_SAMPLES-SUMMARY \
+        -C CONCOCT
+        """
