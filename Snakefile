@@ -75,13 +75,12 @@ rule anvi_run_hmms:
     input:
         "data/anvio/{assembly}/{assembly}.db"
     output:
-        "data/anvio/{assembly}/{assembly}.db.run-hmms.done"
+        touch("data/anvio/{assembly}/{assembly}.db.run-hmms.done")
     params:
         threads=30
     shell:
         """
         anvi-run-hmms -c {input} --num-threads {params.threads}
-        touch {output}
         """
 
 rule anvi_export_gene_calls:
@@ -99,7 +98,7 @@ rule anvi_run_centrifuge:
     output:
         hits="data/anvio/{assembly}/{assembly}.centrifuge_hits.tsv",
         report="data/anvio/{assembly}/{assembly}.centrifuge_report.tsv",
-        done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done"
+        done=touch("data/anvio/{assembly}/{assembly}.db.added_centrifuge.done")
     params:
         threads=8,
         centrifuge_base=CENTRIFUGE_BASE,
@@ -126,8 +125,6 @@ rule anvi_run_centrifuge:
         rm centrifuge_report.tsv
 
         cd ../../../
-
-        touch {output.done}
         """
 
 rule anvi_profile:
@@ -135,8 +132,6 @@ rule anvi_profile:
         sorted="data/sorted_reads/{assembly}.{sample}.bam",
         idx="data/sorted_reads/{assembly}.{sample}.bam.bai",
         db="data/anvio/{assembly}/{assembly}.db",
-        centrifuge_done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done",
-        hmms_done="data/anvio/{assembly}/{assembly}.db.run-hmms.done"
     output:
         aux="data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/AUXILIARY-DATA.h5",
         prof="data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/PROFILE.db",
@@ -156,6 +151,8 @@ rule anvi_merge:
                         assembly=wildcards.assembly,
                         sample=SAMPLES),
         db="data/anvio/{assembly}/{assembly}.db"
+        centrifuge_done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done",
+        hmms_done="data/anvio/{assembly}/{assembly}.db.run-hmms.done"
     output:        
         aux="data/anvio/{assembly}/SAMPLES_MERGED/AUXILIARY-DATA.h5",
         prof="data/anvio/{assembly}/SAMPLES_MERGED/PROFILE.db",
