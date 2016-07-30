@@ -153,7 +153,6 @@ rule anvi_profile:
 rule anvi_merge:
     input:
         profiles=expand("data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/RUNINFO.cp",
-                        assembly=ASSEMBLIES,
                         sample=SAMPLES),
         db="data/anvio/{assembly}/{assembly}.db"
     output:        
