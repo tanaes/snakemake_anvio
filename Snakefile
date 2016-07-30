@@ -152,7 +152,7 @@ rule anvi_profile:
 
 rule anvi_merge:
     input:
-        profiles=expand("data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/RUNINFO.cp",
+        profiles=lambda wildcards: expand("data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/RUNINFO.cp",
                         assembly=wildcards.assembly,
                         sample=SAMPLES),
         db="data/anvio/{assembly}/{assembly}.db"
