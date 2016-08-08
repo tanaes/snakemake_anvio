@@ -4,7 +4,7 @@ configfile: "config_bins.yaml"
 
 ENV_ANVI = "source activate py3"
 
-shell.prefix(ENV_ANVI + '; ')
+script.prefix(ENV_ANVI + '; ')
 
 # SAMPLES = ["A", "B"]
 # ASSEMBLIES = ["X","Y"]
