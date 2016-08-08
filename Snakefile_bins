@@ -27,6 +27,6 @@ rule pick_bins:
         C = config["C"],
         R = config["R"],
         N = config["N"],
-        sample = config["SAMPLES"][wildcards.assembly]
+        sample = lambda wildcards: config["SAMPLES"][wildcards.assembly]
     script:
         "pick_bins.py"
