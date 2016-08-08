@@ -21,6 +21,14 @@ rule all:
                assembly=ASSEMBLIES,
                sample=SAMPLES)
 
+rule tar:
+    input:
+        "data/anvio/{assembly}/{assembly}_SAMPLES-SUMMARY/index.html"
+    output:
+        "data/summaries/{assembly}_SAMPLES-SUMMARY.tar.gz"
+    shell:
+        "tar -czf {output} {input}"
+
 
 rule bowtie2_index:
     input:
