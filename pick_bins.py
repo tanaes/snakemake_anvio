@@ -8,8 +8,8 @@ from shutil import copyfile
 def calc_scores(bins_df, cov_df, sample_name, C = 1, R = 1, A = 10):
     join_df = bins_df.join(cov_df)
 
-    join_df['score'] = join_df['percent_complete'] * C - 
-                   join_df['percent_redundancy'] * R +
+    join_df['score'] = join_df['percent_complete'] * C - \
+                   join_df['percent_redundancy'] * R + \
                    join_df[sample_name] / join_df[sample_name].max() * A
 
     return(join_df)
@@ -28,13 +28,13 @@ coverage_fp = snakemake.input['cov_fp']
 out_dir = snakemake.output['bins_outdir']
 out_info_fp = snakemake.output['bins_info']
 
-C = snakemake.config["C"]
-R = snakemake.config["R"]
-A = snakemake.config["A"]
-N = snakemake.config["N"]
+C = snakemake.params["C"]
+R = snakemake.params["R"]
+A = snakemake.params["A"]
+N = snakemake.params["N"]
 
 assembly = snakemake.wildcards['assembly']
-sample = snakemake.wildcards['sample']
+sample = snakemake.params['sample']
 
 # get bin summary -- sort by completeness
 # bins    taxon   total_length    num_contigs     N50     GC_content      percent_complete        percent_redundancy
