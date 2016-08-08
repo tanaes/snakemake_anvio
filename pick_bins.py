@@ -58,6 +58,8 @@ sample_name = '{0}_{1}'.format(assembly.upper(), sample.upper())
 if sample_name[0].isdigit():
     sample_name = 's' + sample_name
 
+sample_name = sample_name.replace("-","_")
+
 bins_df = calc_scores(bins_df, cov_df, sample_name, C = C, R = R, A = A)
 
 topN = bins_df.nlargest(N, 'score')
