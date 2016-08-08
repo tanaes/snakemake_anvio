@@ -66,7 +66,7 @@ topN = bins_df.nlargest(N, 'score')
 
 topN_names = topN.index
 
-copy_fastas(bins_dir, bins, out_dir)
+copy_fastas(bins_dir, topN_names, out_dir)
 
 topN.to_csv(out_info_fp, sep='\t')
 
