@@ -53,7 +53,10 @@ cov_df = pd.read_csv(coverage_fp, sep='\t', header=0, index_col = 0)
 # score: C * completion  - (R * redundancy) +  A * (coverage /  max_coverage) 
 # C = 1, R = 1, A = 10
 
-sample_name = 's{0}_{1}'.format(assembly.upper(), sample.upper())
+sample_name = '{0}_{1}'.format(assembly.upper(), sample.upper())
+
+if sample_name[0].isdigit():
+    sample_name = 's' + sample_name
 
 bins_df = calc_scores(bins_df, cov_df, sample_name, C = C, R = R, A = A)
 
