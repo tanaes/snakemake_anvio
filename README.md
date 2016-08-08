@@ -1,8 +1,6 @@
 # snakemake_anvio
 snakemake rules for running anvio
 
-Example edit
-
 This Snakefile will run a basic [anvi'o](http://merenlab.org/software/anvio/) analysis
 of a set of assemblies and a set of samples, using the [snakemake](https://bitbucket.org/snakemake/snakemake/wiki/Home)
 workflow manager. 
@@ -30,3 +28,11 @@ Example launch command for launching on a Torque (qsub) job manager
 
 ### anvio_install.sh
 The commands I used for setting up my Anvi'o conda environment on Centos6
+
+### dag.svg
+Visualization of the workflow steps run when executing the example config.yaml
+
+### data [directory]
+Fake example data structure. For your own data, replace the files in data/assemblies
+and data/samples with the assembled contigs and the per-sample paired-end gzipped
+fastqs, respectively. Files must be named [assembly].fa and [sample].R[1,2].fq.gz 

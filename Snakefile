@@ -150,7 +150,7 @@ rule anvi_merge:
         profiles=lambda wildcards: expand("data/sorted_reads/{assembly}.{sample}.bam-ANVIO_PROFILE/RUNINFO.cp",
                         assembly=wildcards.assembly,
                         sample=SAMPLES),
-        db="data/anvio/{assembly}/{assembly}.db"
+        db="data/anvio/{assembly}/{assembly}.db",
         centrifuge_done="data/anvio/{assembly}/{assembly}.db.added_centrifuge.done",
         hmms_done="data/anvio/{assembly}/{assembly}.db.run-hmms.done"
     output:        
@@ -161,7 +161,8 @@ rule anvi_merge:
         """
         anvi-merge {input.profiles} \
         -o data/anvio/{wildcards.assembly}/SAMPLES_MERGED \
-        -c {input.db}
+        -c {input.db} \
+        -W
         """
 
 rule anvi_summarize:
