@@ -10,8 +10,6 @@ shell.prefix(ENV_ANVI + '; ')
 # ASSEMBLIES = ["X","Y"]
 # CENTRIFUGE_BASE = "/home/jgsanders/miniconda/envs/anvio2/centrifuge"
 
-lambda wildcards: expand("{basedir}{data}",basedir=config["basedir"],data=config["data"][wildcards.data]
-
 rule all:
     input:
         expand("data/bins/{assembly}/picked_bins.txt", assembly=config["ASSEMBLIES"])
